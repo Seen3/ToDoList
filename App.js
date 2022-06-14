@@ -1,32 +1,52 @@
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View,Button } from 'react-native';
 import GoalInput from './components/GoalInput';
 import GoalItem from './components/GoalItem';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
+  const [modalIsVisible,setModalVisibility]=useState(false);
+  const [courseGoals, setCourseGoals] = useState([]);
   
-  const [allTasks, addTasks] = useState([]);
-  
-  function addGoal(enteredText) {
-    addTasks(allTasks => [...allTasks, {text:enteredText,key:Math.random().toString()}]);
+  function startAddGoalHandeler(){
+    setModalVisibility(true);
+  }
+  function endAddGoalHandeler(){
+    setModalVisibility(false);
+  }
+
+  function addGoalHandeler(enteredGoalText) {
+    setCourseGoals((currentCourseGoals)=>[
+      ...currentCourseGoals,
+      {text:enteredGoalText,id:Math.random().toString()},
+    ]);
+    endAddGoalHandeler();
   };
-  function deleteGoal(id){
-    addTasks(allTasks=>{
-      return allTasks.filter((goal)=>goal.id !== id);
+  function deleteGoalHandeler(id){
+    setCourseGoals((currentCourseGoals)=>{
+      return currentCourseGoals.filter((goal)=>goal.id!==id);
     });
   };
   return (
-    <View style={styles.appContainer}>
-      <GoalInput onAddGoal={addGoal} />
+    <>
+    <StatusBar style='light' />
+    <View style={styles.appContainer}> 
+      <Button title='Add new Goal' color="#a2aaf5" onPress={startAddGoalHandeler}/>
+      <GoalInput visible={modalIsVisible} onAddGoal={addGoalHandeler} onCancel={endAddGoalHandeler}/>
       <View style={styles.tasksContainer}>
-        <FlatList data={allTasks} renderItem={itemData => {
+        <FlatList data={courseGoals} renderItem={itemData => {
           return (
-            <GoalItem text={itemData.item.text} id={itemData.item.id} onDelete={deleteGoal}/>
-          )
-        }} />
+            <GoalItem text={itemData.item.text} id={itemData.item.id} onDelete={deleteGoalHandeler}/>
+          );
+        }}
+         keyExtractor={(item,index)=>{
+          return item.id;
+         }}
+         alwaysBounceVertical={false}
+         />
       </View>
     </View>
+    </>
   );
 }
 
